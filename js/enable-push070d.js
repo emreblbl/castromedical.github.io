@@ -1,0 +1,11 @@
+const _token=document.querySelector('meta[name=csrf-token]').getAttribute('content');const firebaseConfig={apiKey:"AIzaSyD_sEXWPCzWyEcE94GgBMzUTJObJ827ERE",authDomain:"my-project-1522740117602.firebaseapp.com",databaseURL:"https://my-project-1522740117602.firebaseio.com",projectId:"my-project-1522740117602",storageBucket:"my-project-1522740117602.appspot.com",messagingSenderId:"517590175305",appId:"1:517590175305:web:6a299ef1150e41d7763998",measurementId:"G-N9GEETVZG5"};firebase.initializeApp(firebaseConfig);const messaging=firebase.messaging();messaging.onMessage(function(payload){const notificationOption={body:payload.notification.body,icon:payload.notification.icon,image:payload.notification.image};if(Notification.permission==="granted"){var notification=new Notification(payload.notification.title,notificationOption);notification.onclick=function(ev){ev.preventDefault();window.open(payload.notification.click_action,'_blank');notification.close();}}});document.addEventListener('DOMContentLoaded',function(){initSW();});function initSW(){if(!"serviceWorker"in navigator){return;}
+if(!"PushManager"in window){return;}
+navigator.serviceWorker.register('/sw.js').then(()=>{console.log('serviceWorker installed!')
+setTimeout(()=>{initPush();},10000)})}
+function initPush(){new Promise(function(resolve,reject){const permissionResult=Notification.requestPermission(function(result){resolve(result);});if(permissionResult){permissionResult.then(resolve,reject);}}).then((permissionResult)=>{if(permissionResult=='denied'){removeSubscriber()}else if(permissionResult=='granted'){initFirebaseMessagingRegistration()}});}
+function initFirebaseMessagingRegistration(){messaging.requestPermission().then(function(){return messaging.getToken()}).then(function(token){localStorage.setItem("token",token)
+const data={locale:document.documentElement.lang,subscription:token}
+fetch('https://notify.imtilakgroup.com/api/subscribe',{method:'POST',body:JSON.stringify(data),headers:{'Accept':'application/json','Content-Type':'application/json','X-CSRF-Token':_token}})})}
+function removeSubscriber(){var token=localStorage.getItem("token")
+const data={token:token}
+fetch('https://notify.imtilakgroup.com/api/unsubscribe',{method:'delete',body:JSON.stringify(data),headers:{'Accept':'application/json','Content-Type':'application/json',}})}
